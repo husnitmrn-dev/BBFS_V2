@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form BBFS Unik</title>
+    <style>
+        :root { --utama:#2563eb; --gelap:#1e3a8a; --abu:#64748b; --latar:#f1f5f9; }
+        * { box-sizing:border-box; }
+        body { margin:0; padding:16px; background:var(--latar); color:#1e293b; font-family:"Segoe UI",Arial,sans-serif; }
+        .container { max-width:860px; margin:auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 5px 18px rgba(15,23,42,.12); }
+        h1 { margin:0; text-align:center; font-size:22px; color:var(--gelap); }
+        .subtitle { margin:6px 0 20px; text-align:center; font-size:13px; color:var(--abu); }
+        .input-card { position:relative; margin-bottom:12px; padding:13px; background:#f8fafc; border:1px solid #dbeafe; border-radius:8px; }
+        .filter-card { margin-top:16px; padding:13px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px; }
+        .filter-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+        .filter-grid textarea { min-height:54px; }
+        .komposisi-card { margin-top:16px; padding:13px; background:#ecfdf5; border:1px solid #86efac; border-radius:8px; }
+        .komposisi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+        .komposisi-grid select { width:100%; padding:9px; border:1px solid #86a98f; border-radius:6px; background:#fff; font-weight:600; }
+        .komposisi-grid small { display:block; margin-top:4px; color:#166534; font-size:11px; }
+        .filter-karakter { display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
+        .filter-karakter label { display:flex; align-items:center; gap:4px; margin:0; cursor:pointer; font-weight:600; }
+        label { display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155; }
+        textarea { width:100%; min-height:65px; padding:10px; border:1px solid #94a3b8; border-radius:6px; resize:vertical; color:#0f172a; font:14px/1.5 monospace; }
+        textarea:focus { outline:2px solid #bfdbfe; border-color:var(--utama); }
+        .remove { position:absolute; top:10px; right:10px; width:auto; min-width:0; padding:5px 8px; background:#ef4444; font-size:11px; }
+        .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:15px; }
+        button { min-width:130px; padding:10px 14px; border:0; border-radius:6px; color:#fff; font-size:13px; font-weight:700; cursor:pointer; }
+        button:hover { filter:brightness(.93); }
+        .primary { background:var(--utama); } .secondary { background:#64748b; } .copy { background:#0f766e; min-width:auto; }
+        .result { display:none; margin-top:22px; padding-top:18px; border-top:1px solid #e2e8f0; }
+        .summary { margin-bottom:10px; font-size:13px; color:#475569; }
+        .summary strong { color:var(--gelap); }
+        .output { min-height:66px; padding:12px; border:1px dashed #60a5fa; border-radius:6px; background:#eff6ff; color:#1e3a8a; font:14px/1.6 monospace; word-break:break-all; }
+        .output.dobel { border-color:#fca5a5; background:#fef2f2; color:#991b1b; }
+        .duplicate { margin-top:14px; }
+        .duplicate summary { cursor:pointer; font-size:13px; font-weight:700; color:#b91c1c; }
+        .duplicate-list { margin-top:8px; padding:10px; border-radius:6px; background:#fef2f2; color:#991b1b; font:13px/1.5 monospace; word-break:break-all; }
+        .empty { color:#64748b; font-family:"Segoe UI",Arial,sans-serif; }
+        @media (max-width:520px) { body { padding:8px; } .container { padding:14px; } button { flex:1; } }
+        @media (max-width:520px) { .filter-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>Form BBFS — Hasil Unik</h1>
+        <p class="subtitle">Masukkan angka BBFS per kolom. Hasil sama otomatis dibuang; bagian Dobel berisi nomor dengan digit kembar, misalnya 0114.</p>
+
+        <section id="daftarInput"></section>
+        <section class="komposisi-card">
+            <label style="color:#166534;">KOMPOSISI DIGIT ANGKA MAIN</label>
+            <div class="komposisi-grid">
+                <div><label for="komposisi4D">4D</label><select id="komposisi4D" data-panjang="4"></select><small id="keterangan4D"></small></div>
+                <div><label for="komposisi3D">3D</label><select id="komposisi3D" data-panjang="3"></select><small id="keterangan3D"></small></div>
+                <div><label for="komposisi2D">2D</label><select id="komposisi2D" data-panjang="2"></select><small id="keterangan2D"></small></div>
+            </div>
+        </section>
+        <section class="filter-card">
+            <label style="color:#c2410c;">FILTER ANGKA MATI</label>
+            <div class="filter-grid">
+                <div><label for="mati4D">4D</label><textarea id="mati4D" placeholder="Contoh: 0114, 4670"></textarea></div>
+                <div><label for="mati3D">3D</label><textarea id="mati3D" placeholder="Contoh: 014, 467"></textarea></div>
+                <div><label for="mati2D">2D (2 digit terakhir)</label><textarea id="mati2D" placeholder="Contoh: 14, 67"></textarea></div>
+            </div>
+            <div style="margin-top:10px;">
+                <label for="matiTidakUrut" style="color:#9a3412;">ANGKA MATI TIDAK SESUAI URUTAN (2D / 3D / 4D / 5D / 6D / 7D)</label>
+                <textarea id="matiTidakUrut" placeholder="Contoh: 0578, 1135, 1335, 01234&#10;2-4 digit: semua susunan angka akan mati, termasuk digit kembar.&#10;5-7 digit: jadi pool, semua hasil unik yang digitnya ada di dalam pool ikut mati."></textarea>
+            </div>
+            <div class="filter-karakter">
+                <div style="width:100%;margin-bottom:6px;"><strong style="color:#9a3412;">Buang berdasarkan jumlah karakter unik:</strong></div>
+                <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-weight:600;margin-bottom:4px;">4D</div>
+                        <label><input type="checkbox" class="filter-karakter-4d" value="1"> 1</label>
+                        <label><input type="checkbox" class="filter-karakter-4d" value="2"> 2</label>
+                        <label><input type="checkbox" class="filter-karakter-4d" value="3"> 3</label>
+                        <label><input type="checkbox" class="filter-karakter-4d" value="4"> 4</label>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:4px;">3D</div>
+                        <label><input type="checkbox" class="filter-karakter-3d" value="1"> 1</label>
+                        <label><input type="checkbox" class="filter-karakter-3d" value="2"> 2</label>
+                        <label><input type="checkbox" class="filter-karakter-3d" value="3"> 3</label>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:4px;">2D</div>
+                        <label><input type="checkbox" class="filter-karakter-2d" value="1"> 1</label>
+                        <label><input type="checkbox" class="filter-karakter-2d" value="2"> 2</label>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="filter-card" style="background:#f0fdf4;border-color:#86efac;">
+            <label style="color:#166534;">FILTER CARI HASIL TIDAK BERURUTAN</label>
+            <div class="filter-grid">
+                <div><label for="cari4D">4D</label><textarea id="cari4D" placeholder="Contoh: 0096"></textarea></div>
+                <div><label for="cari3D">3D</label><textarea id="cari3D" placeholder="Contoh: 096"></textarea></div>
+                <div><label for="cari2D">2D</label><textarea id="cari2D" placeholder="Contoh: 96"></textarea></div>
+            </div>
+            <small style="display:block;margin-top:8px;color:#166534;">Urutan digit diabaikan. Contoh 0096 akan mencari semua susunan digit 0, 0, 9, 6.</small>
+        </section>
+        <div class="actions">
+            <button type="button" class="secondary" onclick="tambahInput()">+ Tambah BBFS</button>
+            <button type="button" class="primary" onclick="prosesBBFS()">Proses BBFS</button>
+        </div>
+
+        <section class="result" id="hasilSeksi">
+            <div class="summary" id="ringkasan"></div>
+            <label for="hasil4D">HASIL 4D UNIK</label>
+            <div class="output" id="hasil4D">-</div>
+            <div class="actions"><input id="nilaiBet4D" type="number" value="1000" min="0" step="100" aria-label="Nilai bet 4D" style="width:90px;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-weight:bold;"><button type="button" class="copy" onclick="salinHasil('hasil4D','nilaiBet4D',this)">Salin 4D + Bet</button></div>
+            <label for="hasil3D" style="margin-top:16px;">HASIL 3D UNIK</label>
+            <div class="output" id="hasil3D">-</div>
+            <div class="actions"><input id="nilaiBet3D" type="number" value="1000" min="0" step="100" aria-label="Nilai bet 3D" style="width:90px;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-weight:bold;"><button type="button" class="copy" onclick="salinHasil('hasil3D','nilaiBet3D',this)">Salin 3D + Bet</button></div>
+            <label for="hasil4DDobel" style="margin-top:16px;color:#b91c1c;">HASIL 4D DOBEL (contoh: 0114)</label>
+            <div class="output dobel" id="hasil4DDobel">-</div>
+            <div class="actions"><input id="nilaiBet4DDobel" type="number" value="1000" min="0" step="100" aria-label="Nilai bet 4D dobel" style="width:90px;padding:8px;border:1px solid #fca5a5;border-radius:6px;font-weight:bold;"><button type="button" class="copy" onclick="salinHasil('hasil4DDobel','nilaiBet4DDobel',this)">Salin 4D Dobel + Bet</button></div>
+            <label for="hasil3DDobel" style="margin-top:16px;color:#b91c1c;">HASIL 3D DOBEL</label>
+            <div class="output dobel" id="hasil3DDobel">-</div>
+            <div class="actions"><input id="nilaiBet3DDobel" type="number" value="1000" min="0" step="100" aria-label="Nilai bet 3D dobel" style="width:90px;padding:8px;border:1px solid #fca5a5;border-radius:6px;font-weight:bold;"><button type="button" class="copy" onclick="salinHasil('hasil3DDobel','nilaiBet3DDobel',this)">Salin 3D Dobel + Bet</button></div>
+            <label for="hasil2D" style="margin-top:16px;">HASIL 2D UNIK</label>
+            <div class="output" id="hasil2D">-</div>
+            <div class="actions"><input id="nilaiBet2D" type="number" value="1000" min="0" step="100" aria-label="Nilai bet 2D" style="width:90px;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-weight:bold;"><button type="button" class="copy" onclick="salinHasil('hasil2D','nilaiBet2D',this)">Salin 2D + Bet</button></div>
+            <label for="hasil2DDobel" style="margin-top:16px;color:#b91c1c;">HASIL 2D DOBEL</label>
+            <div class="output dobel" id="hasil2DDobel">-</div>
+            <div class="actions"><input id="nilaiBet2DDobel" type="number" value="1000" min="0" step="100" aria-label="Nilai bet 2D dobel" style="width:90px;padding:8px;border:1px solid #fca5a5;border-radius:6px;font-weight:bold;"><button type="button" class="copy" onclick="salinHasil('hasil2DDobel','nilaiBet2DDobel',this)">Salin 2D Dobel + Bet</button></div>
+        </section>
+    </main>
+
+    <script>
+        let nomorInput=0;
+
+        function tambahInput(nilai=''){
+            nomorInput++;
+            const kartu=document.createElement('div');
+            kartu.className='input-card';
+            kartu.innerHTML='<label for="bbfs-'+nomorInput+'">BBFS '+nomorInput+'</label><textarea id="bbfs-'+nomorInput+'" class="input-bbfs" placeholder="Contoh: 01467, 01468, 01469"></textarea><button type="button" class="remove" title="Hapus BBFS ini">Hapus</button>';
+            kartu.querySelector('textarea').value=nilai;
+            kartu.querySelector('.remove').addEventListener('click',()=>{
+                kartu.remove();
+                if(!document.querySelector('.input-bbfs')) tambahInput();
+            });
+            document.getElementById('daftarInput').appendChild(kartu);
+        }
+
+        function ambilAngka(teks){
+            return teks.match(/\d+/g)||[];
+        }
+
+        function ambilFilter(id,panjang){
+            return new Set(ambilAngka(document.getElementById(id).value).filter(angka=>angka.length===panjang));
+        }
+
+        function terapkanFilter(daftar,panjang,filterMati){
+            return daftar.filter(nomor=>{
+                if(panjang===4 && filterMati.d4.has(nomor)) return false;
+                if(panjang===3 && filterMati.d3.has(nomor)) return false;
+                return !filterMati.d2.has(nomor.slice(-2));
+            });
+        }
+
+        function kunciTanpaUrutan(nomor){
+            return nomor.split('').sort().join('');
+        }
+
+        function ambilFilterTidakUrut(){
+            const filter={d4:new Set(),d3:new Set(),d2:new Set(), pool:[] };
+            ambilAngka(document.getElementById('matiTidakUrut').value)
+                .forEach(angka=>{
+                    if(angka.length>=2 && angka.length<=4){
+                        filter['d'+angka.length].add(kunciTanpaUrutan(angka));
+                    } else if(angka.length>=5 && angka.length<=10){
+                        // simpan sebagai pool Set digit
+                        filter.pool.push(new Set(angka.split('')));
+                    }
+                });
+            return filter;
+        }
+
+        function terapkanFilterTidakUrut(daftar,panjang,filterTidakUrut){
+            return daftar.filter(nomor=>{
+                const kunci=kunciTanpaUrutan(panjang===2 ? nomor.slice(-2) : nomor);
+                
+                // Exact match 2D/3D/4D tetap berlaku untuk angka dengan digit kembar.
+                if(panjang===4 && filterTidakUrut.d4.has(kunci)) return false;
+                if(panjang===3 && filterTidakUrut.d3.has(kunci)) return false;
+                if(panjang===2 && filterTidakUrut.d2.has(kunci)) return false;
+
+                // Filter pool hanya berlaku untuk hasil tanpa digit dobel.
+                if(new Set(nomor).size!==nomor.length) return true;
+
+                // cek pool 5-7 angka (dan sampai 10): jika semua digit nomor ada di dalam salah satu pool, mati
+                if(filterTidakUrut.pool.length>0){
+                    const digitNomor=nomor.slice(-panjang).split('');
+                    // untuk 4D/3D/2D, cek apakah ada pool yang mengandung semua digitnya
+                    for(const poolSet of filterTidakUrut.pool){
+                        if(digitNomor.every(d=>poolSet.has(d))){
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
+        }
+
+        function jumlahKarakterUnik(nomor){
+            return new Set(nomor).size;
+        }
+
+        function terapkanFilterJumlahKarakter(daftar,jumlahDibuang){
+            return daftar.filter(nomor=>!jumlahDibuang.has(jumlahKarakterUnik(nomor)));
+        }
+
+        function ambilFilterCari(){
+            return {
+                d4:new Set(ambilAngka(document.getElementById('cari4D').value).filter(angka=>angka.length===4).map(kunciTanpaUrutan)),
+                d3:new Set(ambilAngka(document.getElementById('cari3D').value).filter(angka=>angka.length===3).map(kunciTanpaUrutan)),
+                d2:new Set(ambilAngka(document.getElementById('cari2D').value).filter(angka=>angka.length===2).map(kunciTanpaUrutan))
+            };
+        }
+
+        function terapkanFilterCari(daftar,panjang,filterCari){
+            const kunciCari=filterCari['d'+panjang];
+            if(kunciCari.size===0) return daftar;
+            return daftar.filter(nomor=>kunciCari.has(kunciTanpaUrutan(panjang===2 ? nomor.slice(-2) : nomor)));
+        }
+
+        function siapkanKomposisi(){
+            document.querySelectorAll('[data-panjang]').forEach(select=>{
+                const panjang=parseInt(select.dataset.panjang,10);
+                for(let sumber1=0;sumber1<=panjang;sumber1++){
+                    const sumber2=panjang-sumber1;
+                    const opsi=document.createElement('option');
+                    opsi.value=sumber1;
+                    opsi.textContent=sumber1+' digit AM1 + '+sumber2+' digit AM2';
+                    select.appendChild(opsi);
+                }
+                select.value=panjang===4 ? '2' : panjang===3 ? '2' : '1';
+                const perbaruiKeterangan=()=>{
+                    const sumber1=parseInt(select.value,10);
+                    document.getElementById('keterangan'+panjang+'D').textContent='AM1: '+sumber1+' digit · AM2: '+(panjang-sumber1)+' digit';
+                };
+                select.addEventListener('change',perbaruiKeterangan);
+                perbaruiKeterangan();
+            });
+        }
+
+        function ambilKomposisi(id,panjang){
+            const nilai=parseInt(document.getElementById(id).value,10);
+            return {sumber1:Number.isNaN(nilai) ? panjang : nilai,sumber2:panjang-(Number.isNaN(nilai) ? panjang : nilai)};
+        }
+
+        function buatKombinasiBBFS(daftarBBFS, panjang, komposisi){
+            const digitSumber1=Array.from(new Set(daftarBBFS.filter(item=>item.sumber===1).flatMap(item=>item.angka.split(''))));
+            const digitSumber2=Array.from(new Set(daftarBBFS.filter(item=>item.sumber===2).flatMap(item=>item.angka.split(''))));
+            const hasil=[];
+            function susun(sementara,sisaSumber1,sisaSumber2){
+                if(sementara.length===panjang) { hasil.push(sementara); return; }
+                if(sisaSumber1>0) digitSumber1.forEach(angka=>susun(sementara+angka,sisaSumber1-1,sisaSumber2));
+                if(sisaSumber2>0) digitSumber2.forEach(angka=>susun(sementara+angka,sisaSumber1,sisaSumber2-1));
+            }
+            if(digitSumber1.length || digitSumber2.length) susun('',komposisi.sumber1,komposisi.sumber2);
+            return hasil;
+        }
+
+        function gabungkanHasilBBFS(daftarBBFS, panjang, komposisi){
+            const unik=new Set();
+            const dobel=new Set();
+            buatKombinasiBBFS(daftarBBFS,panjang,komposisi).forEach(nomor=>{
+                if(/(.).*\1/.test(nomor)) dobel.add(nomor);
+                else unik.add(nomor);
+            });
+            return {hasil:Array.from(unik),duplikat:Array.from(dobel)};
+        }
+
+        function prosesBBFS(){
+            const daftarBBFS=[];
+            let totalInput=0;
+
+            document.querySelectorAll('.input-bbfs').forEach((input,index)=>{
+                ambilAngka(input.value).forEach(angka=>{
+                    totalInput++;
+                    daftarBBFS.push({angka,sumber:index+1});
+                });
+            });
+
+            const hasil4D=gabungkanHasilBBFS(daftarBBFS,4,ambilKomposisi('komposisi4D',4));
+            const hasil3D=gabungkanHasilBBFS(daftarBBFS,3,ambilKomposisi('komposisi3D',3));
+            const hasil2D=gabungkanHasilBBFS(daftarBBFS,2,ambilKomposisi('komposisi2D',2));
+            const filterMati={d4:ambilFilter('mati4D',4),d3:ambilFilter('mati3D',3),d2:ambilFilter('mati2D',2)};
+            const filterTidakUrut=ambilFilterTidakUrut();
+            const filterKarakter4D=new Set(Array.from(document.querySelectorAll('.filter-karakter-4d:checked')).map(input=>parseInt(input.value,10)));
+            const filterKarakter3D=new Set(Array.from(document.querySelectorAll('.filter-karakter-3d:checked')).map(input=>parseInt(input.value,10)));
+            const filterKarakter2D=new Set(Array.from(document.querySelectorAll('.filter-karakter-2d:checked')).map(input=>parseInt(input.value,10)));
+            const totalSebelumFilter=hasil4D.hasil.length+hasil4D.duplikat.length+hasil3D.hasil.length+hasil3D.duplikat.length+hasil2D.hasil.length+hasil2D.duplikat.length;
+            hasil4D.hasil=terapkanFilter(hasil4D.hasil,4,filterMati);
+            hasil4D.duplikat=terapkanFilter(hasil4D.duplikat,4,filterMati);
+            hasil3D.hasil=terapkanFilter(hasil3D.hasil,3,filterMati);
+            hasil3D.duplikat=terapkanFilter(hasil3D.duplikat,3,filterMati);
+            hasil2D.hasil=terapkanFilter(hasil2D.hasil,2,filterMati);
+            hasil2D.duplikat=terapkanFilter(hasil2D.duplikat,2,filterMati);
+            const totalSetelahFilterMati=hasil4D.hasil.length+hasil4D.duplikat.length+hasil3D.hasil.length+hasil3D.duplikat.length+hasil2D.hasil.length+hasil2D.duplikat.length;
+            const jumlahDibuangMati=totalSebelumFilter-totalSetelahFilterMati;
+            hasil4D.hasil=terapkanFilterTidakUrut(hasil4D.hasil,4,filterTidakUrut);
+            hasil4D.duplikat=terapkanFilterTidakUrut(hasil4D.duplikat,4,filterTidakUrut);
+            hasil3D.hasil=terapkanFilterTidakUrut(hasil3D.hasil,3,filterTidakUrut);
+            hasil3D.duplikat=terapkanFilterTidakUrut(hasil3D.duplikat,3,filterTidakUrut);
+            hasil2D.hasil=terapkanFilterTidakUrut(hasil2D.hasil,2,filterTidakUrut);
+            hasil2D.duplikat=terapkanFilterTidakUrut(hasil2D.duplikat,2,filterTidakUrut);
+            const totalSetelahFilterTidakUrut=hasil4D.hasil.length+hasil4D.duplikat.length+hasil3D.hasil.length+hasil3D.duplikat.length+hasil2D.hasil.length+hasil2D.duplikat.length;
+            const jumlahDibuangTidakUrut=totalSetelahFilterMati-totalSetelahFilterTidakUrut;
+            hasil4D.hasil=terapkanFilterJumlahKarakter(hasil4D.hasil,filterKarakter4D);
+            hasil4D.duplikat=terapkanFilterJumlahKarakter(hasil4D.duplikat,filterKarakter4D);
+            hasil3D.hasil=terapkanFilterJumlahKarakter(hasil3D.hasil,filterKarakter3D);
+            hasil3D.duplikat=terapkanFilterJumlahKarakter(hasil3D.duplikat,filterKarakter3D);
+            hasil2D.hasil=terapkanFilterJumlahKarakter(hasil2D.hasil,filterKarakter2D);
+            hasil2D.duplikat=terapkanFilterJumlahKarakter(hasil2D.duplikat,filterKarakter2D);
+            const jumlahDibuangKarakter=totalSetelahFilterTidakUrut-(hasil4D.hasil.length+hasil4D.duplikat.length+hasil3D.hasil.length+hasil3D.duplikat.length+hasil2D.hasil.length+hasil2D.duplikat.length);
+            const filterCari=ambilFilterCari();
+            hasil4D.hasil=terapkanFilterCari(hasil4D.hasil,4,filterCari);
+            hasil4D.duplikat=terapkanFilterCari(hasil4D.duplikat,4,filterCari);
+            hasil3D.hasil=terapkanFilterCari(hasil3D.hasil,3,filterCari);
+            hasil3D.duplikat=terapkanFilterCari(hasil3D.duplikat,3,filterCari);
+            hasil2D.hasil=terapkanFilterCari(hasil2D.hasil,2,filterCari);
+            hasil2D.duplikat=terapkanFilterCari(hasil2D.duplikat,2,filterCari);
+            const output4D=document.getElementById('hasil4D');
+            const output3D=document.getElementById('hasil3D');
+            const output4DDobel=document.getElementById('hasil4DDobel');
+            const output3DDobel=document.getElementById('hasil3DDobel');
+            const output2D=document.getElementById('hasil2D');
+            const output2DDobel=document.getElementById('hasil2DDobel');
+            output4D.innerText=hasil4D.hasil.length ? hasil4D.hasil.join('*') : 'Belum ada hasil 4D tanpa digit sama.';
+            output3D.innerText=hasil3D.hasil.length ? hasil3D.hasil.join('*') : 'Belum ada hasil 3D tanpa digit sama.';
+            output4DDobel.innerText=hasil4D.duplikat.length ? hasil4D.duplikat.join('*') : 'Tidak ada hasil dobel.';
+            output3DDobel.innerText=hasil3D.duplikat.length ? hasil3D.duplikat.join('*') : 'Tidak ada hasil dobel.';
+            output2D.innerText=hasil2D.hasil.length ? hasil2D.hasil.join('*') : 'Belum ada hasil 2D tanpa digit sama.';
+            output2DDobel.innerText=hasil2D.duplikat.length ? hasil2D.duplikat.join('*') : 'Tidak ada hasil dobel.';
+            output4D.classList.toggle('empty',hasil4D.hasil.length===0);
+            output3D.classList.toggle('empty',hasil3D.hasil.length===0);
+            output4DDobel.classList.toggle('empty',hasil4D.duplikat.length===0);
+            output3DDobel.classList.toggle('empty',hasil3D.duplikat.length===0);
+            output2D.classList.toggle('empty',hasil2D.hasil.length===0);
+            output2DDobel.classList.toggle('empty',hasil2D.duplikat.length===0);
+            const totalDuplikat=hasil4D.duplikat.length+hasil3D.duplikat.length+hasil2D.duplikat.length;
+            document.getElementById('ringkasan').innerHTML='Input BBFS: <strong>'+totalInput+'</strong> · 4D unik: <strong>'+hasil4D.hasil.length+'</strong> · 3D unik: <strong>'+hasil3D.hasil.length+'</strong> · 2D unik: <strong>'+hasil2D.hasil.length+'</strong> · 4D dobel: <strong>'+hasil4D.duplikat.length+'</strong> · 3D dobel: <strong>'+hasil3D.duplikat.length+'</strong> · 2D dobel: <strong>'+hasil2D.duplikat.length+'</strong> · Dibuang filter mati: <strong>'+jumlahDibuangMati+'</strong> · Dibuang tidak sesuai urutan: <strong>'+jumlahDibuangTidakUrut+'</strong> · Dibuang jumlah karakter: <strong>'+jumlahDibuangKarakter+'</strong> (total dobel: <strong>'+totalDuplikat+'</strong>)';
+            document.getElementById('hasilSeksi').style.display='block';
+        }
+
+        function salinHasil(idHasil,idBet,tombol){
+            const isi=document.getElementById(idHasil).innerText;
+            if(!isi || isi.startsWith('Belum ada') || isi==='Tidak ada hasil dobel.') { alert('Belum ada hasil untuk disalin.'); return; }
+            const teks=isi+'#'+(document.getElementById(idBet).value||'0');
+            navigator.clipboard.writeText(teks).then(()=>{
+                const awal=tombol.innerText;
+                tombol.innerText='Tersalin!';
+                setTimeout(()=>tombol.innerText=awal,1200);
+            });
+        }
+
+        siapkanKomposisi();
+        tambahInput();
+        tambahInput();
+    </script>
+</body>
+</html>
